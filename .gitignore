@@ -10,6 +10,7 @@ __pycache__/
 .Python
 data/
 output/
+notebooks/
 build/
 develop-eggs/
 dist/
