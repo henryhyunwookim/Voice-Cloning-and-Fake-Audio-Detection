@@ -7,7 +7,7 @@ import seaborn as sns
 from scipy import stats
 from scipy.stats import ttest_1samp
 
-from keras import backend as K
+from tensorflow.keras import backend as K
 
 
 def chi_goodness_of_fit_test(data, col_data, col_name, significance_level):
