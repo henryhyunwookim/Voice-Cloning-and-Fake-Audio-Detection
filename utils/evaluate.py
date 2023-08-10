@@ -30,9 +30,16 @@ import numpy as np
 import time
 import operator
 from math import sqrt
+import os
+
+# Speech recognition, process audio
+import speech_recognition as sr
+from pydub import AudioSegment
+from jiwer import process_words, process_characters, visualize_alignment
 
 # Custom function
 from utils.plot import plot_scores
+from utils.nlp import clean_text
 
 
 def update_dicts(clf, X, y, n_splits, n, eval_dict, scores_dict, key, random_state, _type):
@@ -207,12 +214,14 @@ def eval_decomposers(X, y, n_splits, n, random_state, classifier, decomposers=No
     return eval_df
 
 
-def hyperparameter_tuning_and_evaluation(n_iter, cv, random_state, X_train, y_train, X_test, y_test, params):
-    classifier = LogisticRegression(random_state=random_state)
+def hyperparameter_tuning_and_evaluation(n_iter, cv, random_state, X_train, y_train, X_test, y_test,
+                                        params, classifier, eval_metric):
+    # classifier = LogisticRegression(random_state=random_state)
+    # classifier = XGBClassifier(random_state=random_state)
 
     best_search = RandomizedSearchCV(estimator=classifier,
                                     param_distributions=params,
-                                    scoring="f1",
+                                    scoring=eval_metric, # "f1"
                                     n_iter=n_iter, # n_iter=10 by default
                                     random_state=random_state,
                                     cv=cv)
@@ -308,3 +317,51 @@ def evaluate_predictions(y_test, preds_df, keys, plot_df=True):
                                          ascending=[True, True, False])
     
     return eval_df
+
+
+def transcribe_audio_and_evaluate(output_folder, output_filename, source_text):
+    eval_dict = {}
+    for filename in os.listdir(output_folder):
+        if output_filename in filename:
+            wav_path = output_folder / filename
+            model_name = filename.split('/')[-1].split('_')[0]
+            # sound=AudioSegment.from_wav(wav_path)
+            r = sr.Recognizer()
+            with sr.AudioFile(str(wav_path)) as source:
+                audio = r.record(source)
+                try:
+                    transcription = r.recognize_google(audio, language='en')
+                    transcription = clean_text(transcription,
+                                               remove_whitespace=True,
+                                               remove_punctuation=True,
+                                               lower=True)
+                except:
+                    print(f'Failed to transcribe the cloned audio by model {model_name}')
+                    transcription = ''
+                # print(f'Transcription of cloned audio by {model_name}: {transcription}')
+
+            eval_dict[model_name] = {}
+            words_output = process_words(source_text, transcription) # source_text and transcription can be either a string or a list of strings
+            eval_dict[model_name]['wer'] = words_output.wer
+            eval_dict[model_name]['mer'] = words_output.mer
+            eval_dict[model_name]['wil'] = words_output.wil
+            eval_dict[model_name]['wip'] = words_output.wip
+
+            chars_output = process_characters(source_text, transcription)
+            eval_dict[model_name]['cer'] = chars_output.cer
+            eval_dict[model_name]['Transcription'] = transcription
+            
+            # print(f'Performance of model "{model_name}":')
+            # print(visualize_alignment(words_output))
+            # print(visualize_alignment(chars_output))
+            # print()
+
+            # Saving the Transcript
+            # transcription_path = output_folder / filename.replace('.wav', '.txt')
+            # if os.path.exists(transcription_path):
+            #     print(f'{transcription_path} already exists.')
+            # else:
+            #     with open(transcription_path, "w") as file:
+            #         file.write(transcription)
+    
+    return eval_dict

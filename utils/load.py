@@ -11,6 +11,8 @@ from numpy import asarray
 from tqdm import tqdm
 import gdown
 
+from utils.nlp import clean_text
+
 
 def load_data(file_name, folder_name=None):
     parent_path = Path(os.getcwd()).parent
@@ -118,3 +120,37 @@ def download_from_gdrive(file_id, file_name, download_dir, root_dir):
     os.chdir(download_dir)
     gdown.download(id=file_id, output=file_name)
     os.chdir(root_dir)
+
+
+def get_variables_for_voice_cloning(source_audio_subpath, target_audio_subpath,
+                                    root_dir, timit_dir, train_csv):
+    # Get source details
+    source_speaker_id = source_audio_subpath.split('/')[2]
+    source_audio_file = source_audio_subpath.split('/')[3]
+    source_file_id = source_audio_file.split('.')[0]
+    source_audio_path = timit_dir / 'data' / source_audio_subpath
+    print(f'Source path: {source_audio_path}')
+
+    # Get source text
+    source_text_subpath = train_csv[(train_csv['speaker_id']==source_speaker_id) &
+            (train_csv['filename']==source_file_id+'.TXT')]['path_from_data_dir'].iloc[0]
+    source_text_file = source_text_subpath.split('/')[3]
+    source_text_path = timit_dir / 'data' / source_text_subpath
+    with open(source_text_path) as txt:
+        raw_source_text = txt.read().split()[2:]
+    source_text = clean_text(raw_source_text, remove_whitespace=True, remove_punctuation=True, lower=True)
+
+    # Get target details
+    target_speaker_id = target_audio_subpath.split('/')[2]
+    target_audio_file = target_audio_subpath.split('/')[3]
+    target_file_id = target_audio_file.split('.')[0]
+    target_audio_path = timit_dir / 'data' / target_audio_subpath
+    print(f'Target path: {target_audio_path}')
+
+    # Get output details
+    output_folder = root_dir / 'output' / f'{source_speaker_id}-{source_file_id}_to_{target_speaker_id}-{target_file_id}'
+    output_filename = f'{source_speaker_id}-{source_file_id}_to_{target_speaker_id}-{target_file_id}.wav'
+
+    return source_speaker_id, source_audio_file, source_file_id, source_audio_path,\
+        target_speaker_id, target_audio_file, target_file_id, target_audio_path,\
+        source_text_file, source_text_path, source_text, output_folder, output_filename

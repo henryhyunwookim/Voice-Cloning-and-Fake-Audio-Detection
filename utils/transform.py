@@ -4,9 +4,9 @@ from datetime import timedelta
 from pylab import rcParams
 from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import RandomUnderSampler
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from statsmodels.tsa.seasonal import seasonal_decompose
+
 
 def pivot_data(data, target, binary_target_value=None):
     X_original = data.drop([target], axis=1)

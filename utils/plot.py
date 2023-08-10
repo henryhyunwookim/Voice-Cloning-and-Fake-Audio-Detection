@@ -146,3 +146,25 @@ def plot_bollinger_band(rolling_mean, bollinger_band_window, bollinger_band_std,
     plt.legend()
     plt.tight_layout()
     plt.show()
+
+
+def plot_callbacks_history(history, figsize=(16, 6),
+                        eval_metrics=['Categorical Crossentropy', 'Accuracy']):
+    plt.figure(figsize=figsize)
+
+    plt.subplot(1,2,1)
+    plt.plot(history['epoch'], history['loss'], history['val_loss'])
+    plt.legend(['loss', 'val_loss'])
+    plt.ylim([0, max(plt.ylim())])
+    plt.xlabel('Epoch')
+    plt.ylabel(f'Loss - {eval_metrics[0]}')
+
+    plt.subplot(1,2,2)
+    plt.plot(history['epoch'],
+            history['accuracy'],
+            history['val_accuracy'])
+    plt.legend(['accuracy', 'val_accuracy'])
+    plt.ylim([0, 1])
+    plt.xlabel('Epoch')
+    plt.ylabel(eval_metrics[1])
+    plt.show();

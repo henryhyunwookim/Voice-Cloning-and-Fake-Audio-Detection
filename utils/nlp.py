@@ -98,3 +98,17 @@ def get_relevant_terms(word_list, term):
     relevant_words = [word for word in unique_words if term in word]
 
     return relevant_words
+
+
+def clean_text(raw_text, remove_whitespace=True, remove_punctuation=True, lower=True):
+    # Remove whitespace
+    if isinstance(raw_text, list):
+        cleaned_text = ' '.join(raw_text)
+    elif isinstance(raw_text, str):
+        cleaned_text = ' '.join(raw_text.split())
+    else:
+        print(f'Failed to remove whitespace from {raw_text} - unrecognized "{type(raw_text)}" object.')
+        cleaned_text = raw_text
+    cleaned_text = cleaned_text.translate(str.maketrans('', '', string.punctuation)) # Remove punctuation
+    cleaned_text = cleaned_text.lower() # Convert to lowercase
+    return cleaned_text
