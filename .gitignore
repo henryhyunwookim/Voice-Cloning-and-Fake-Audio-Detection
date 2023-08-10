@@ -12,6 +12,8 @@ data/
 output/
 notebooks/
 saved/
+TTS/
+voice_cloning/
 build/
 develop-eggs/
 dist/
