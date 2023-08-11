@@ -306,3 +306,12 @@ def create_bollinger_band(y, y_test, bollinger_band_window=20, bollinger_band_st
     lower_band = (rolling_mean - (rolling_std * bollinger_band_std)).rename('Lower Band')
 
     return rolling_mean, upper_band, lower_band
+
+
+def normalize_volume(wav, target_dBFS, increase_only=False, decrease_only=False):
+    if increase_only and decrease_only:
+        raise ValueError("Both increase only and decrease only are set")
+    dBFS_change = target_dBFS - 10 * np.log10(np.mean(wav ** 2))
+    if (dBFS_change < 0 and increase_only) or (dBFS_change > 0 and decrease_only):
+        return wav
+    return wav * (10 ** (dBFS_change / 20))

@@ -350,6 +350,7 @@ def transcribe_audio_and_evaluate(output_folder, output_filename, source_text):
             chars_output = process_characters(source_text, transcription)
             eval_dict[model_name]['cer'] = chars_output.cer
             eval_dict[model_name]['Transcription'] = transcription
+            eval_dict[model_name]['Source Text'] = source_text
             
             # print(f'Performance of model "{model_name}":')
             # print(visualize_alignment(words_output))

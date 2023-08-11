@@ -10,6 +10,7 @@ from PIL import Image
 from numpy import asarray
 from tqdm import tqdm
 import gdown
+from pydub import AudioSegment
 
 from utils.nlp import clean_text
 
@@ -154,3 +155,28 @@ def get_variables_for_voice_cloning(source_audio_subpath, target_audio_subpath,
     return source_speaker_id, source_audio_file, source_file_id, source_audio_path,\
         target_speaker_id, target_audio_file, target_file_id, target_audio_path,\
         source_text_file, source_text_path, source_text, output_folder, output_filename
+
+
+def get_concat_audio(target_audio_path, target_concat_dir, target_speaker_id,
+                    add_silent=500, n_duplicate_concat=10):
+    target_parent_dir = os.path.split(target_audio_path)[0]
+    target_output_path = target_concat_dir / f'{target_speaker_id}_concat.wav'
+    
+    if os.path.exists(target_output_path):
+        print(f'{target_output_path} already exists.')
+    
+    else:
+        print(f'Creating a concatenated audio file for target speaker {target_speaker_id}.')
+        concat_audio = AudioSegment.empty()
+        file_list = [file for file in os.listdir(target_parent_dir) if 'WAV.wav' in file]
+
+        for i in range(n_duplicate_concat):
+            random.shuffle(file_list)
+            for file in file_list:
+                wav_path = target_parent_dir / Path(file)
+                audio = AudioSegment.from_wav(wav_path) + AudioSegment.silent(add_silent) # default: 1000ms=1 second
+                concat_audio += audio
+
+        concat_audio.export(target_output_path, 'wav')
+    
+    return target_output_path

@@ -19,9 +19,9 @@ def copy_original(output_folder,
                 source_text_file, source_text_path):
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
-        print(f'{output_folder} created.')
+        print(f'Folder {output_folder} created.')
     else:
-        print(f'{output_folder} already exists.')
+        print(f'Folder {output_folder} already exists.')
 
     # Copy with file permission; dest can be a folder
     if not os.path.exists(output_folder / source_audio_file):
