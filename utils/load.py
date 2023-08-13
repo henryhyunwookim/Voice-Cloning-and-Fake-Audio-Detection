@@ -125,7 +125,7 @@ def download_from_gdrive(file_id, file_name, download_dir, root_dir):
 
 
 def get_variables_for_voice_cloning(source_audio_subpath, target_audio_subpath,
-                                    root_dir, timit_dir, train_csv):
+                                    root_dir, timit_dir, df):
     # Get source details
     source_speaker_id = source_audio_subpath.split('/')[2]
     source_audio_file = source_audio_subpath.split('/')[3]
@@ -134,8 +134,8 @@ def get_variables_for_voice_cloning(source_audio_subpath, target_audio_subpath,
     print(f'Source path: {source_audio_path}')
 
     # Get source text
-    source_text_subpath = train_csv[(train_csv['speaker_id']==source_speaker_id) &
-            (train_csv['filename']==source_file_id+'.TXT')]['path_from_data_dir'].iloc[0]
+    source_text_subpath = df[(df['speaker_id']==source_speaker_id) &
+            (df['filename']==source_file_id+'.TXT')]['path_from_data_dir'].iloc[0]
     source_text_file = source_text_subpath.split('/')[3]
     source_text_path = timit_dir / 'data' / source_text_subpath
     with open(source_text_path) as txt:

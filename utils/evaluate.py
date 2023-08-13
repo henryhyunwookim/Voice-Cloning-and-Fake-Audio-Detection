@@ -324,7 +324,13 @@ def transcribe_audio_and_evaluate(output_folder, output_filename, source_text):
     for filename in os.listdir(output_folder):
         if output_filename in filename:
             wav_path = output_folder / filename
-            model_name = filename.split('/')[-1].split('_')[0]
+            
+            sub_filename = filename.split('/')[-1]
+            if '_M' in sub_filename.split('_to_')[0]:
+                model_name = sub_filename.split('_to_')[0].split('_M')[0]
+            else:
+                model_name = sub_filename.split('_to_')[0].split('_F')[0]
+
             # sound=AudioSegment.from_wav(wav_path)
             r = sr.Recognizer()
             with sr.AudioFile(str(wav_path)) as source:

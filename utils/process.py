@@ -48,7 +48,7 @@ def process_audio(audio_path, timit_dir, sr=None, n_mfcc=None):
 
 
 def clone_voice(target_audio_path, source_audio_path, source_text, output_dir, output_filename,
-                tools=['voice_cloning', 'multilingual_tts', 'en_tts'],
+                tools=['voice_cloning', 'multilingual_tts', 'en_tts'], en_tts_models=None,
                 noise_reduction=False, adjust_decibel=0, progress_bar=False, gpu=False):
     """
     noise_reduction: only for voice_cloning model
@@ -108,21 +108,23 @@ def clone_voice(target_audio_path, source_audio_path, source_text, output_dir, o
         for en_model in en_models:
             try:
                 en_model_name = en_model.split('/')[-1]
-                en_output_path = output_dir / f'{en_model_name}_{output_filename}'
-                if os.path.exists(en_output_path):
-                    print(f'{en_output_path} already exists.')
-                else:
-                    print(f'Cloning from source audio to target audio by {en_model_name} model.')
-                    en_tts = TTS(en_model)
-                    en_tts.tts_with_vc_to_file(
-                        source_text,
-                        speaker_wav=target_audio_path,
-                        file_path=en_output_path
-                    )
-                    
-                    # Adjust volume of the generated file
-                    if adjust_decibel != 0:
-                        (AudioSegment.from_wav(en_output_path) + adjust_decibel).export(en_output_path, 'wav')
+                if ((en_tts_models != None) and (en_model_name in en_tts_models))\
+                    or (en_tts_models == None):
+                    en_output_path = output_dir / f'{en_model_name}_{output_filename}'
+                    if os.path.exists(en_output_path):
+                        print(f'{en_output_path} already exists.')
+                    else:
+                        print(f'Cloning from source audio to target audio by {en_model_name} model.')
+                        en_tts = TTS(en_model)
+                        en_tts.tts_with_vc_to_file(
+                            source_text,
+                            speaker_wav=target_audio_path,
+                            file_path=en_output_path
+                        )
+                        
+                        # Adjust volume of the generated file
+                        if adjust_decibel != 0:
+                            (AudioSegment.from_wav(en_output_path) + adjust_decibel).export(en_output_path, 'wav')
             except Exception as e:
                 print(e)
                 print(f'Failed to load {en_model_name}.')
