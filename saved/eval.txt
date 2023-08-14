@@ -1,0 +1,27 @@
+dropout_rate = 0.85 # 0.75
+learning_rate = 0.0005 # 0.008
+num_epochs = 20 # 100
+num_batch_size = 64 # 64
+loss: 0.7881 - accuracy: 0.7167
+
+
+dropout_rate = 0.8 # 0.75
+learning_rate = 0.0001 # 0.008
+num_epochs = 20 # 100
+num_batch_size = 16 # 64
+loss: 0.7842 - accuracy: 0.8167
+
+
+dropout_rate = 0.8 # 0.75
+learning_rate = 0.0001 # 0.008
+num_epochs = 20 # 100
+num_batch_size = 32 # 64
+loss: 0.7659 - accuracy: 0.7333
+
+
+dropout_rate = 0.75 # 0.75
+learning_rate = 0.00005 # 0.008
+num_epochs = 20 # 100
+num_batch_size = 32 # 64
+loss: 0.7800 - accuracy: 0.7833
+* with third layer: model.add(Dense(512, activation='relu')) # 1024
