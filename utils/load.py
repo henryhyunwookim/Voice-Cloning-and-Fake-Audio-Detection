@@ -159,7 +159,7 @@ def get_variables_for_voice_cloning(source_audio_subpath, target_audio_subpath,
 
 
 def get_concat_audio(target_audio_path, target_concat_dir, target_speaker_id,
-                    add_silent=500, n_duplicate_concat=10):
+                    add_silence=0, n_duplicate_concat=1):
     target_parent_dir = os.path.split(target_audio_path)[0]
     target_output_path = target_concat_dir / f'{target_speaker_id}_concat.wav'
     
@@ -175,9 +175,24 @@ def get_concat_audio(target_audio_path, target_concat_dir, target_speaker_id,
             random.shuffle(file_list)
             for file in file_list:
                 wav_path = target_parent_dir / Path(file)
-                audio = AudioSegment.from_wav(wav_path) + AudioSegment.silent(add_silent) # default: 1000ms=1 second
+                audio = AudioSegment.from_wav(wav_path) + AudioSegment.silent(add_silence) # default: 1000ms=1 second
                 concat_audio += audio
 
         concat_audio.export(target_output_path, 'wav')
     
     return target_output_path
+
+
+def get_stratified_sample(df_path, df, groupby, label_col, num_sample_per_lebel):
+    if os.path.exists(df_path):
+        stratified_sample_df = pd.read_csv(df_path)
+        print('stratified_sample_df loaded from CSV.')
+
+    else:
+        stratified_sample = df.groupby(groupby)[label_col].apply(
+            lambda x: x.sample(num_sample_per_lebel)).reset_index(drop=True).values
+        stratified_sample_df = df[ df[label_col].apply(lambda x: x in stratified_sample) ]
+        stratified_sample_df.to_csv(df_path, index=False)
+        print('stratified_sample_df saved as CSV.')
+
+    return stratified_sample_df
