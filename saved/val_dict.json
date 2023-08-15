@@ -1,1 +1,1 @@
-{"FAWF0": {"val_loss": 0.042055532336235046, "val_accuracy": 1.0}, "MMDM1": {"val_loss": 0.03558693826198578, "val_accuracy": 1.0}, "FLAG0": {"val_loss": 0.009209572337567806, "val_accuracy": 1.0}}
+{"FAWF0": {"val_loss": [0.0413, 0.0182], "val_accuracy": [1.0, 1.0]}, "MMDM1": {"val_loss": [0.0645, 0.0997], "val_accuracy": [1.0, 1.0]}, "FLAG0": {"val_loss": [0.0204, 0.0067], "val_accuracy": [1.0, 1.0]}, "MWEW0": {"val_loss": [0.0004, 0.0002], "val_accuracy": [1.0, 1.0]}}
