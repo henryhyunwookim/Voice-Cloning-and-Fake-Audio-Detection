@@ -37,6 +37,10 @@ from utils.transform import convert_vol_to_float, add_features_from_previous_dat
                             , create_bollinger_band
 from utils.plot import plot_histograms, plot_bollinger_band
 from utils.predict import get_trading_decision_and_results, train_models_and_make_predictions
+from utils.load import get_variables_for_voice_cloning, get_concat_audio
+from utils.save import copy_original
+from utils.process import clone_voice
+from utils.evaluate import transcribe_audio_and_evaluate
 
 
 def process_df(df, sheet_name,
@@ -153,3 +157,58 @@ def process_df(df, sheet_name,
     
     # print(capital_return_df)
     return eval_df, capital_return_df
+
+
+def clone_voice_and_evaluate(n, audio_path, root_dir, timit_dir, df, target_concat_dir,
+                             add_silence=0, n_duplicate_concat=1,
+                             vc_tools=['voice_cloning', 'en_tts'], en_tts_models=['vits'],
+                             noise_reduction=True, adjust_decibel=0, progress_bar=False, gpu=True):
+    eval_df_list = []
+    for i in range(n):
+        # Get random samples from available audio.
+        sampled = audio_path.sample(n=2, replace=False)
+        source_audio_subpath = sampled.iloc[0]
+        target_audio_subpath = sampled.iloc[1]
+
+        # Get necessary variables.
+        source_speaker_id, source_audio_file, source_file_id, source_audio_path,\
+        target_speaker_id, target_audio_file, target_file_id, target_audio_path,\
+        source_text_file, source_text_path, source_text, output_dir, output_filename\
+            = get_variables_for_voice_cloning(
+                source_audio_subpath, target_audio_subpath, root_dir, timit_dir, df)
+        print()
+
+        # Copy the original audio data to the output folder for an easier review of the output.
+        copy_original(output_dir, source_audio_file, source_audio_path,
+                    target_audio_file, target_audio_path, source_text_file, source_text_path)
+        print()
+
+        # To improve the quality of cloned audio, create a target audio file to reference,
+        # which is a concatenation of 10 different audio files from the same target speaker.
+        concat_target_audio_path = get_concat_audio(target_audio_path, target_concat_dir, target_speaker_id,
+                                                    add_silence=add_silence, n_duplicate_concat=n_duplicate_concat)
+        print()
+
+        # Clone voice and save it in the output folder.
+        clone_voice(str(concat_target_audio_path),
+                    str(source_audio_path),
+                    source_text,
+                    output_dir, output_filename,
+                    tools=vc_tools, # 'voice_cloning', 'multilingual_tts', 'en_tts'
+                    en_tts_models=en_tts_models,
+                    noise_reduction=noise_reduction, adjust_decibel=adjust_decibel,
+                    progress_bar=progress_bar, gpu=gpu
+                    )
+
+        # Transcribe cloned voice and return an evaluation result as a dictionary.
+        eval_dict = transcribe_audio_and_evaluate(output_dir, output_filename, source_text)
+        eval_df = pd.DataFrame(eval_dict).T
+        eval_df_list.append(eval_df)
+
+    concat_eval_df = pd.concat(eval_df_list)
+    eval_cols = ['wer', 'mer', 'wil', 'wip', 'cer']
+    concat_eval_df = concat_eval_df.sort_values(eval_cols, ascending=[True, True, True, False, True])
+    concat_eval_df.reset_index(drop=True)
+    concat_eval_df['model'] = concat_eval_df.index
+
+    return concat_eval_df
