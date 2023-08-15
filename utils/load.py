@@ -12,6 +12,7 @@ from tqdm import tqdm
 import gdown
 from pydub import AudioSegment
 import random
+import json
 
 from utils.nlp import clean_text
 from utils.process import process_audio
@@ -212,14 +213,16 @@ def get_X_and_y(train_X_path, test_X_path, train_y_path, test_y_path, audio_path
         test_X = pd.read_csv(test_X_path)
         train_y = pd.read_csv(train_y_path)[label_col]
         test_y = pd.read_csv(test_y_path)[label_col]
+        print('CSV files already exist. Skipping processing audio data.')
         print('CSV files loaded as data frames.')
 
     else:
+        print('CSV files do not exist. Processing audio data.')
         # Process audio files to get train_df.
-        train_X, train_y, train_df = process_audio(audio_path, timit_dir, n_mfcc=n_mfcc)
+        _, _, train_df = process_audio(audio_path, timit_dir, n_mfcc=n_mfcc)
 
         # Split train_df into train and test sets.
-        new_train_df, train_X, train_y, new_test_df, test_X, test_y\
+        _, train_X, train_y, _, test_X, test_y\
             = custom_train_test_split(train_df, train_size=train_size)
 
         # Save data frames to CSV files.
@@ -230,3 +233,18 @@ def get_X_and_y(train_X_path, test_X_path, train_y_path, test_y_path, audio_path
         print('Data frames saved as CSV files.')
 
     return train_X, test_X, train_y, test_y
+
+
+def get_label_dict(label_dict_path, unique_labels):
+    if os.path.exists(label_dict_path):
+        print(f'Existing label dict loaded from {label_dict_path}.')
+        label_dict = json.load(open(label_dict_path, 'r'))
+
+    else:
+        label_dict = {label: i for i, label in enumerate(unique_labels)}
+        json.dump(label_dict, open(label_dict_path, 'w'))
+        print(f'label dict created and saved in {label_dict_path}.')
+        
+    reverse_label_dict = {v: k for k, v in label_dict.items()}
+
+    return label_dict, reverse_label_dict

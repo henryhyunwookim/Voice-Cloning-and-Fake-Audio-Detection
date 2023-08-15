@@ -30,14 +30,6 @@ def process_audio(audio_path, timit_dir, sr=None, n_mfcc=None):
         # print(f'Shape of scaled mfccs features: {X.shape}')
         X_list.append(X)
 
-        # scaled_X = StandardScaler().fit_transform(X.reshape(-1, 1)).reshape(1, -1)[0]
-        # X_list.append(scaled_X)
-
-        # S = np.abs(librosa.stft(audio_array))
-        # transformed_s = librosa.amplitude_to_db(S, ref=np.max)
-        # normalized_s = np.mean(transformed_s.T, axis=0)
-        # X_list.append(normalized_s)
-
     df = pd.DataFrame(X_list)
     df['label'] = y_list
 

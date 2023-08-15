@@ -216,4 +216,4 @@ def clone_voice_and_evaluate(concat_eval_path, n, audio_path, root_dir, timit_di
         concat_eval_df.reset_index(drop=True)
         concat_eval_df['model'] = concat_eval_df.index
 
-    return concat_eval_df
+    return concat_eval_df, eval_cols
