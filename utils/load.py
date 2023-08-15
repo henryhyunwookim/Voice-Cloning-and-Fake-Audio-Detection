@@ -14,6 +14,8 @@ from pydub import AudioSegment
 import random
 
 from utils.nlp import clean_text
+from utils.process import process_audio
+from utils.split import custom_train_test_split
 
 
 def load_data(file_name, folder_name=None):
@@ -196,3 +198,35 @@ def get_stratified_sample(df_path, df, groupby, label_col, num_sample_per_lebel)
         print('stratified_sample_df saved as CSV.')
 
     return stratified_sample_df
+
+
+def get_X_and_y(train_X_path, test_X_path, train_y_path, test_y_path, audio_path, timit_dir,
+                label_col='label', n_mfcc=40, train_size=0.8):
+    if os.path.exists(train_X_path) and\
+        os.path.exists(test_X_path) and\
+        os.path.exists(train_y_path) and\
+        os.path.exists(test_y_path):
+
+        # Load CSV files to data frames.
+        train_X = pd.read_csv(train_X_path)
+        test_X = pd.read_csv(test_X_path)
+        train_y = pd.read_csv(train_y_path)[label_col]
+        test_y = pd.read_csv(test_y_path)[label_col]
+        print('CSV files loaded as data frames.')
+
+    else:
+        # Process audio files to get train_df.
+        train_X, train_y, train_df = process_audio(audio_path, timit_dir, n_mfcc=n_mfcc)
+
+        # Split train_df into train and test sets.
+        new_train_df, train_X, train_y, new_test_df, test_X, test_y\
+            = custom_train_test_split(train_df, train_size=train_size)
+
+        # Save data frames to CSV files.
+        train_X.to_csv(train_X_path, index=False)
+        test_X.to_csv(test_X_path, index=False)
+        train_y.to_csv(train_y_path, index=False)
+        test_y.to_csv(test_y_path, index=False)
+        print('Data frames saved as CSV files.')
+
+    return train_X, test_X, train_y, test_y

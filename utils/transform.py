@@ -315,3 +315,14 @@ def normalize_volume(wav, target_dBFS, increase_only=False, decrease_only=False)
     if (dBFS_change < 0 and increase_only) or (dBFS_change > 0 and decrease_only):
         return wav
     return wav * (10 ** (dBFS_change / 20))
+
+
+def encode_label(labels_list, mapping_dict, num_labels):
+    encoded_labels_list = []
+    for labels in labels_list:
+        encoded_labels = labels.map(mapping_dict)
+        sparse_labels = np.zeros((encoded_labels.shape[0], num_labels))
+        np.put_along_axis(arr=sparse_labels, indices=encoded_labels.values.reshape(-1,1), values=1, axis=1)
+        encoded_labels_list.append(sparse_labels)
+
+    return encoded_labels_list
