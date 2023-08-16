@@ -31,6 +31,7 @@ import time
 import operator
 from math import sqrt
 import os
+import json
 
 # Speech recognition, process audio
 import speech_recognition as sr
@@ -372,3 +373,39 @@ def transcribe_audio_and_evaluate(output_folder, output_filename, source_text):
             #         file.write(transcription)
     
     return eval_dict
+
+
+def get_val_dict(normalized_test_X, test_y, sparse_test_y, val_dict_path, model):
+    if os.path.exists(val_dict_path):
+            print(f'val_dict already exists. Loading from {val_dict_path}')
+            val_dict = json.load(open(val_dict_path, 'r'))
+    else:
+            print(f'val_dict not found in {val_dict_path}. Creating it.')
+            val_dict = {}
+            for i, label in enumerate(test_y):
+                    val_X = normalized_test_X[ i : i+1 ]
+                    val_y = sparse_test_y[ i : i+1 ]
+                    val_loss, val_accuracy = model.evaluate(val_X, val_y, verbose=0)
+                    if label in val_dict:
+                            val_dict[label]['val_loss'].append(round(val_loss, 4))
+                            val_dict[label]['val_accuracy'].append(round(val_accuracy, 4))
+                    else:
+                            val_dict[label] = {'val_loss': [round(val_loss, 4)], 'val_accuracy': [round(val_accuracy, 4)]}
+
+            json.dump(val_dict, open(val_dict_path, 'w'))
+
+    return val_dict
+
+
+def get_mean_val_df(val_dict):
+    mean_val_dict = {}
+    for k, v in val_dict.items():
+        idx = k
+        val_loss = np.mean(v['val_loss'])
+        val_accuracy = np.mean(v['val_accuracy'])
+        mean_val_dict[idx] = {'val_loss': val_loss, 'val_accuracy': val_accuracy}
+        
+    mean_val_df = pd.DataFrame(mean_val_dict).T.sort_values(
+        ['val_accuracy', 'val_loss'], ascending =[False, True])
+    
+    return mean_val_df

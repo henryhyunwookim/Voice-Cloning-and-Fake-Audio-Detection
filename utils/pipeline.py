@@ -164,6 +164,7 @@ def clone_voice_and_evaluate(concat_eval_path, n, audio_path, root_dir, timit_di
                              add_silence=0, n_duplicate_concat=1,
                              vc_tools=['voice_cloning', 'en_tts'], en_tts_models=['vits'],
                              noise_reduction=True, adjust_decibel=0, progress_bar=False, gpu=True):
+    eval_cols = ['wer', 'mer', 'wil', 'wip', 'cer']
     if os.path.exists(concat_eval_path):
         concat_eval_df = pd.read_csv(concat_eval_path)
         print('concat_eval_df loaded from CSV.')
@@ -211,7 +212,6 @@ def clone_voice_and_evaluate(concat_eval_path, n, audio_path, root_dir, timit_di
             eval_df_list.append(eval_df)
 
         concat_eval_df = pd.concat(eval_df_list)
-        eval_cols = ['wer', 'mer', 'wil', 'wip', 'cer']
         concat_eval_df = concat_eval_df.sort_values(eval_cols, ascending=[True, True, True, False, True])
         concat_eval_df.reset_index(drop=True)
         concat_eval_df['model'] = concat_eval_df.index

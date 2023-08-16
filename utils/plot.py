@@ -3,8 +3,13 @@ import pandas as pd
 import operator
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from pylab import rcParams
+
+import librosa
+from librosa.display import waveshow
+
 
 def plot_histograms(data,
                     target, target_figsize,
@@ -168,3 +173,18 @@ def plot_callbacks_history(history, figsize=(16, 6),
     plt.xlabel('Epoch')
     plt.ylabel(eval_metrics[1])
     plt.show();
+
+
+def plot_audio_array(row, col, figsize, sharex, sharey,
+                    audio_array, sample_rate, title):
+    fig, ax = plt.subplots(row, col, figsize=figsize, sharex=sharex, sharey=sharey)
+
+    waveshow(audio_array, sr=sample_rate, label='Mono', ax=ax[0])
+    ax[0].legend()
+
+    y_harm, y_perc = librosa.effects.hpss(audio_array)
+    librosa.display.waveshow(y_harm, sr=sample_rate, alpha=0.5, label='Harmonic', ax=ax[1])
+    librosa.display.waveshow(y_perc, sr=sample_rate, color='r', alpha=0.25, label='Percussive', ax=ax[1])
+    ax[1].legend()
+
+    plt.suptitle(title);
