@@ -10,14 +10,18 @@ from pydub import AudioSegment
 import os
 
 
-def process_audio(audio_path, timit_dir, sr=None, n_mfcc=None):
+def process_audio(audio_paths, audio_dir, sr=None, n_mfcc=None, y_label=None):
     X_list = []
     y_list = []
-    for audio_subpath in tqdm(audio_path):
-        audio_path = timit_dir / 'data' / audio_subpath
+    for audio_path in tqdm(audio_paths):
+        if audio_dir != None:
+            audio_path = audio_dir / audio_path
 
-        y = audio_subpath.split('/')[2]
-        y_list.append(y)
+        if y_label == None:
+            y = audio_path.split('/')[2]
+            y_list.append(y)
+        else:
+            y_list.append(y_label)
 
         audio_array, sample_rate = librosa.load(audio_path, sr=None)
         # Set sr to None to get original sampling rate. Otherwise the default is 22050.

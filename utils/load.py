@@ -201,7 +201,7 @@ def get_stratified_sample(df_path, df, groupby, label_col, num_sample_per_lebel)
     return stratified_sample_df
 
 
-def get_X_and_y(train_X_path, test_X_path, train_y_path, test_y_path, audio_path, timit_dir,
+def get_X_and_y(train_X_path, test_X_path, train_y_path, test_y_path, audio_path, audio_dir,
                 label_col='label', n_mfcc=40, train_size=0.8):
     if os.path.exists(train_X_path) and\
         os.path.exists(test_X_path) and\
@@ -219,7 +219,7 @@ def get_X_and_y(train_X_path, test_X_path, train_y_path, test_y_path, audio_path
     else:
         print('CSV files do not exist. Processing audio data.')
         # Process audio files to get train_df.
-        _, _, train_df = process_audio(audio_path, timit_dir, n_mfcc=n_mfcc)
+        _, _, train_df = process_audio(audio_path, audio_dir, n_mfcc=n_mfcc)
 
         # Split train_df into train and test sets.
         _, train_X, train_y, _, test_X, test_y\
