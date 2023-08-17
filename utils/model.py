@@ -1,10 +1,13 @@
 import os
 import json
 from datetime import datetime
+import numpy as np
 
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.callbacks import ModelCheckpoint
+
+from utils.statistics import f1_score
 
 
 def compile_sequential_model(num_layers, num_labels, units_list, activation_list,
@@ -33,15 +36,18 @@ def compile_and_fit_sequential_model(best_model_path, best_result_path,
                                     num_layers, num_labels, units_list, activation_list,
                                     input_shape, dropout_rate, optimizer, loss, metrics,
                                     train_X, train_y, test_X, test_y,
-                                    num_batch_size, num_epochs, checkpointer=None
+                                    num_batch_size, num_epochs, checkpointer=None, save_model=True, overwrite=False
 ):
-    if os.path.exists(best_model_path) and os.path.exists(best_result_path):
+    if os.path.exists(best_model_path) and os.path.exists(best_result_path) and not overwrite:
         print('Load saved model and results from drive.')
         model = load_model(best_model_path)
         history = json.load(open(best_result_path, 'r'))
 
     else:
-        print('No model exsits in drive. Creating one.')
+        if overwrite:
+            print('Overwriting existing files in drive.')
+        else:
+            print('No model exsits in drive. Creating one.')
         model = compile_sequential_model(
                         num_layers, num_labels, units_list, activation_list,
                         input_shape, dropout_rate, optimizer, loss, metrics)
@@ -82,9 +88,14 @@ def compile_and_fit_sequential_model(best_model_path, best_result_path,
         # Convert the tf.keras.callbacks.History object into a dictionary.
         history = {**history.params, 'epoch': history.epoch, **history.history}
 
-        # Save the model and results
-        model.save(best_model_path)
-        json.dump(history, open(best_result_path, 'w'))
-        print('Model and results saved in drive.')
+        for k, v in history.items():
+            if 'f1_score' in k:
+                history[k] = [float(np.mean(f1_score)) for f1_score in v]
+
+        if save_model and not overwrite:
+            # Save the model and results
+            model.save(best_model_path)
+            json.dump(history, open(best_result_path, 'w'))
+            print('Model and results saved in drive.')
 
     return model, history

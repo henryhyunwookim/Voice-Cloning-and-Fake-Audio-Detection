@@ -9,6 +9,8 @@ from scipy.stats import ttest_1samp
 
 from tensorflow.keras import backend as K
 
+from utils.predict import get_rank_predictions
+
 
 def chi_goodness_of_fit_test(data, col_data, col_name, significance_level):
     chi_goodness_of_fit_result = stats.chisquare(col_data)
@@ -168,3 +170,41 @@ def f1_score(y_true, y_pred):
     recall = tp / (tp + fn + K.epsilon())
     f1_score = 2 * precision * recall / (precision + recall + K.epsilon())
     return f1_score
+
+
+def get_stats(X_train, X_test, y_train, y_test, model,
+              target_column="rank", target="candidates",
+              updated=False):
+    stats_columns = ["y_train", "y_test"]
+    print_statements = [
+        "Ground truth stats:",
+        "Train stats:",
+        "Test stats:"
+    ]
+    if updated:
+        stats_columns = [stats_column + "_updated" for stats_column in stats_columns]
+        print_statements = ["(Updated) " + print_statement for print_statement in print_statements]
+    
+    stats_df = pd.DataFrame(
+        index=["Mean (Top 5 rankers)", "Mean", "Std"],
+        columns=stats_columns,
+        data=[
+            [round(y_train[y_train<=5].mean(), 4),
+            round(y_test[y_test<=5].mean(), 4)],
+            [round(y_train.mean(), 4),
+            round(y_test.mean(), 4)],
+            [round(y_train.std(), 4),
+            round(y_test.std(), 4)]
+        ]
+    )
+
+    print(print_statements[0])
+    print(stats_df,"\n")
+
+    print(print_statements[1])
+    train_result = get_rank_predictions(X_train, y_train, model, target_column=target_column, target=target)
+
+    print(print_statements[2])
+    test_result = get_rank_predictions(X_test, y_test, model, target_column=target_column, target=target)
+
+    return stats_df, train_result, test_result
