@@ -248,3 +248,15 @@ def get_label_dict(label_dict_path, unique_labels):
     reverse_label_dict = {v: k for k, v in label_dict.items()}
 
     return label_dict, reverse_label_dict
+
+
+def get_cloned_audio_paths(main_output_dir):
+    cloned_audio_paths = []
+    for folder in os.listdir(main_output_dir):
+        if '_to_' in folder:
+            for file in os.listdir(main_output_dir / folder):
+                if '_to_' in file:
+                    file_path = main_output_dir / folder / file
+                    cloned_audio_paths.append(file_path)
+    
+    return cloned_audio_paths

@@ -92,7 +92,7 @@ def compile_and_fit_sequential_model(best_model_path, best_result_path,
             if 'f1_score' in k:
                 history[k] = [float(np.mean(f1_score)) for f1_score in v]
 
-        if save_model and not overwrite:
+        if save_model and overwrite:
             # Save the model and results
             model.save(best_model_path)
             json.dump(history, open(best_result_path, 'w'))
