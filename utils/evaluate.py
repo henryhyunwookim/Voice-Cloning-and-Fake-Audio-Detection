@@ -375,37 +375,59 @@ def transcribe_audio_and_evaluate(output_folder, output_filename, source_text):
     return eval_dict
 
 
-def get_val_dict(normalized_test_X, test_y, sparse_test_y, val_dict_path, model):
+def get_val_dict(normalized_test_X, test_y, sparse_test_y, val_dict_path, model, eval_metric='accuracy', round_precision=4):
     if os.path.exists(val_dict_path):
-            print(f'val_dict already exists. Loading from {val_dict_path}')
-            val_dict = json.load(open(val_dict_path, 'r'))
-    else:
-            print(f'val_dict not found in {val_dict_path}. Creating it.')
-            val_dict = {}
-            for i, label in enumerate(test_y):
-                    val_X = normalized_test_X[ i : i+1 ]
-                    val_y = sparse_test_y[ i : i+1 ]
-                    val_loss, val_accuracy = model.evaluate(val_X, val_y, verbose=0)
-                    if label in val_dict:
-                            val_dict[label]['val_loss'].append(round(val_loss, 4))
-                            val_dict[label]['val_accuracy'].append(round(val_accuracy, 4))
-                    else:
-                            val_dict[label] = {'val_loss': [round(val_loss, 4)], 'val_accuracy': [round(val_accuracy, 4)]}
+        print(f'val_dict already exists. Loading from {val_dict_path}')
+        val_dict = json.load(open(val_dict_path, 'r'))
 
-            json.dump(val_dict, open(val_dict_path, 'w'))
+    else:
+        print(f'val_dict not found in {val_dict_path}. Creating it.')
+        val_dict = {}
+        for i, label in enumerate(test_y):
+            val_X = normalized_test_X[ i : i+1 ]
+            val_y = sparse_test_y[ i : i+1 ]
+            val_loss, val_score = model.evaluate(val_X, val_y, verbose=0)
+            
+            if label in val_dict:
+                val_dict[label]['val_loss'].append(float(round(val_loss, round_precision)))
+                val_dict[label][f'val_{eval_metric}'].append(float(round(val_score, round_precision)))
+            else:
+                val_dict[label] = {'val_loss': [float(round(val_loss, round_precision))],
+                        f'val_{eval_metric}': [float(round(val_score, round_precision))]}
+        
+        json.dump(val_dict, open(val_dict_path, 'w'))
 
     return val_dict
 
 
-def get_mean_val_df(val_dict):
+def get_mean_val_df(val_dict, eval_metric='accuracy'):
     mean_val_dict = {}
     for k, v in val_dict.items():
         idx = k
         val_loss = np.mean(v['val_loss'])
-        val_accuracy = np.mean(v['val_accuracy'])
-        mean_val_dict[idx] = {'val_loss': val_loss, 'val_accuracy': val_accuracy}
+        val_score = np.mean(v[f'val_{eval_metric}'])
+        mean_val_dict[idx] = {'val_loss': val_loss, f'val_{eval_metric}': val_score}
         
     mean_val_df = pd.DataFrame(mean_val_dict).T.sort_values(
-        ['val_accuracy', 'val_loss'], ascending =[False, True])
+        [f'val_{eval_metric}', 'val_loss'], ascending =[False, True])
     
     return mean_val_df
+
+
+def eval_neural_network(model, X, y, history, eval_metric, agg_eval_score=None, round_precision=4):
+    test_loss, test_score = model.evaluate(X, y)
+    print('Test loss:', test_loss)
+    if agg_eval_score == 'mean':
+        print(f'Test {eval_metric}:', round(np.mean(test_score), round_precision))
+    else:
+        print(f'Test {eval_metric}:', test_score)
+    print()
+    for k, v in history.items():
+        best_score = None
+        if 'loss' in k:
+            best_score = min(v)
+        elif eval_metric in k:
+            best_score = max(v)
+
+        if best_score != None:
+            print(f'Best {k}: {round(best_score, round_precision)}')
