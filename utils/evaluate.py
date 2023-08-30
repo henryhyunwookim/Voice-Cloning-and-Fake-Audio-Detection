@@ -414,14 +414,14 @@ def get_mean_val_df(val_dict, eval_metric='accuracy'):
     return mean_val_df
 
 
-def eval_neural_network(model, X, y, history, eval_metric, agg_eval_score=None, round_precision=4):
+def eval_neural_network(model, X, y, history, eval_metric, round_precision=4):
     test_loss, test_score = model.evaluate(X, y)
     print('Test loss:', test_loss)
-    if agg_eval_score == 'mean':
+    if eval_metric == 'f1_score':
         print(f'Test {eval_metric}:', round(np.mean(test_score), round_precision))
     else:
         print(f'Test {eval_metric}:', test_score)
-    print()
+    print('\nResults during training:')
     for k, v in history.items():
         best_score = None
         if 'loss' in k:
