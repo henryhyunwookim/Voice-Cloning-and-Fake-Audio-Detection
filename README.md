@@ -42,7 +42,7 @@ Use Word Error Rate (WER) for automatic evaluation of the voice cloning (VC) sys
     - vits: An English voice conversion model from the <a href='https://pypi.org/project/TTS/'>TTS</a> library.
     - speech_generator: A speech generator from the <a href='https://pypi.org/project/Voice-Cloning/'>Voice_Cloning</a> package.
 
-2. Evaluations
+2. Model Performance
     - Word Error Rate (WER) for transcription<br>
     Evaluation of speech generation algorithms showed a WER of 0.12 for the 'vits' model and 0.34 for the 'speech_generator.' Despite the suboptimal WER for 'speech_generator,' it was still utilized due to its favorable impact on speaker classification accuracy. Several other evaluation measures were also adopted, and it's worth mentioning that the 'vits' model demonstrated a notable Character Error Rate (CER) of 0.04.
    
@@ -51,7 +51,7 @@ Use Word Error Rate (WER) for automatic evaluation of the voice cloning (VC) sys
 
 <u>Fake Audio Detection (FAD) System</u>
 
-1. Evaluation
+1. Model Performance
     - F-score for binary classification (authentic vs. synthesized speeches)<br>
         Another neural network model was developed to evaluate binary classification between authentic and synthesized speeches. The model achieved a perfect F-score on the test data, signifying its capability to distinguish fake audio with the highest precision and recall.
 
