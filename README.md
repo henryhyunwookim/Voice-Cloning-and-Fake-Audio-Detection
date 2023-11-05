@@ -67,4 +67,4 @@ To run VoiceCloningAndFakeAudioDetection.ipynb locally, please clone or fork thi
 
 pip install -r requirements.txt
 
-##### Source: Apziva
+##### <i>* Associated with Apziva</i>
