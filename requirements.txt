@@ -54,7 +54,7 @@ tensorflow_intel==2.11.0
 tokenizers==0.13.3
 torch==2.0.1+cu117
 torchaudio==2.0.2+cu117
-tqdm==4.64.1
+tqdm==4.66.3
 trainer==0.0.30
 transformers==4.36.0
 umap==0.1.1
